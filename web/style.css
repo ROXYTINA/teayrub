@@ -50,6 +50,11 @@ button, input { font: inherit; color: inherit; }
 .btn:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--ink); }
 .btn:active { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--ink); }
 .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: 3px 3px 0 var(--ink); }
+.avatar-picker { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 12px 0 14px; padding: 12px; border: 2px dashed var(--grid); border-radius: 12px; position: relative; }
+.avatar-arrows { display: grid; gap: 6px; }
+.avatar.preview { width: 96px; height: 96px; font-size: 2.2rem; animation: bob 2.2s ease-in-out infinite; }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+#av-rand { position: absolute; top: 6px; right: 6px; padding: .2rem .45rem; font-size: .75rem; }
 .btn.primary { background: var(--yellow); }
 .btn.danger { background: #ffd1de; }
 .btn.big { font-size: 1.2rem; padding: .8rem 1rem; width: 100%; }
@@ -133,13 +138,14 @@ input::placeholder { color: #9a99bd; }
 .bar i { display: block; height: 100%; width: 0; background: var(--mint); transition: width .25s linear; }
 
 .layout { display: grid; grid-template-columns: 220px minmax(0, 1fr) 300px; gap: 18px; align-items: start; }
+.players { min-width: 0; overflow: hidden; }
 .players ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
-.players li { display: flex; align-items: center; gap: 8px; }
+.players li { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .players li.off { opacity: .45; }
 .avatar { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 3px solid var(--ink); display: grid; place-items: center; font-family: 'Chewy', cursive; }
 .pname { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pscore { font-variant-numeric: tabular-nums; }
-.tag { font-size: .8rem; border: 2px solid var(--ink); border-radius: 8px; padding: 0 5px; background: var(--yellow); }
+.pscore { flex-shrink: 0; font-variant-numeric: tabular-nums; }
+.tag { flex-shrink: 0; font-size: .8rem; border: 2px solid var(--ink); border-radius: 8px; padding: 0 5px; background: var(--yellow); }
 .tag.ok { background: var(--mint); }
 
 .board {

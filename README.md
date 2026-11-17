@@ -21,7 +21,7 @@
 ## Architecture
 
 | Layer | Technology | Purpose |
-| :--- | :--- | :--- |
+| :--- | :--- | :--- |n
 | **Edge / CDN** | Amazon CloudFront + S3 | Serves static site (`/`) and saved artwork (`/artwork/*`) |
 | **Compute** | Node.js 20 (`Express` + `ws`) on ECS Fargate | Stateless REST & WebSocket servers across 2 AZs |
 | **State & Sync** | ElastiCache Redis (Multi-AZ) | Room state, Pub/Sub, distributed timer locks, Lua scoring |

@@ -4,6 +4,22 @@ const WS_URL = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.ho
 const COLORS = ['#23224d', '#7d7d96', '#ff4f8b', '#ff8a3d', '#ffd43b', '#2fd6a0', '#27b5e8', '#3f6fe0', '#6b5bff', '#a8672f'];
 const SIZES = [4, 10, 22]; // in canvas units (canvas is 800 x 600)
 const AVATAR_BG = ['#ffd43b', '#2fd6a0', '#ff9dbd', '#9ad7ff', '#c9bcff', '#ffb98a'];
+const AVATAR_ACC = ['shades', 'crown', 'cap', 'cat', 'normal'];
+const AVATAR_MOUTH = ['smile', 'teeth', 'o', 'tongue', 'stache'];
+function avatarSvg(bg, acc = 'shades', mouth = 'smile') {
+  const hat = acc === 'crown' ? '<polygon points="15,15 17,6 21,11 24,5 27,11 31,6 33,15" fill="#ffd43b" stroke="#23224d" stroke-width="2.5" stroke-linejoin="round"/>'
+    : acc === 'cap' ? '<path d="M13 17 Q24 7 35 17 Z" fill="#ff4f8b" stroke="#23224d" stroke-width="2.5"/><line x1="28" y1="17" x2="40" y2="17" stroke="#23224d" stroke-width="3" stroke-linecap="round"/>'
+    : acc === 'cat' ? '<polygon points="12,18 15,6 21,14" fill="'+bg+'" stroke="#23224d" stroke-width="2.5"/><polygon points="36,18 33,6 27,14" fill="'+bg+'" stroke="#23224d" stroke-width="2.5"/>' : '';
+  const eyes = acc === 'shades'
+    ? '<rect x="14" y="19" width="8" height="5" rx="1.5" fill="#23224d"/><rect x="26" y="19" width="8" height="5" rx="1.5" fill="#23224d"/><line x1="22" y1="21" x2="26" y2="21" stroke="#23224d" stroke-width="2.5"/>'
+    : '<circle cx="19" cy="21" r="2.3" fill="#23224d"/><circle cx="29" cy="21" r="2.3" fill="#23224d"/>';
+  const m = mouth === 'teeth' ? '<rect x="18" y="27" width="12" height="5" rx="2" fill="#fff" stroke="#23224d" stroke-width="2.2"/><line x1="24" y1="27" x2="24" y2="32" stroke="#23224d" stroke-width="2"/>'
+    : mouth === 'o' ? '<circle cx="24" cy="29" r="3.2" fill="#23224d"/>'
+    : mouth === 'tongue' ? '<path d="M18 27 Q24 32 30 27" fill="none" stroke="#23224d" stroke-width="2.5" stroke-linecap="round"/><path d="M21 29 Q24 36 27 29 Z" fill="#ff4f8b" stroke="#23224d" stroke-width="2"/>'
+    : mouth === 'stache' ? '<path d="M16 28 Q20 25 24 28 Q28 25 32 28" fill="none" stroke="#23224d" stroke-width="3" stroke-linecap="round"/>'
+    : '<path d="M18 27 Q24 33 30 27" fill="none" stroke="#23224d" stroke-width="2.5" stroke-linecap="round"/>';
+  return `<svg viewBox="0 0 48 48" width="100%" height="100%" aria-hidden="true">${hat}<path d="M9 47 C9 35 16 33 24 33 C32 33 39 35 39 47 Z" fill="${bg}" stroke="#23224d" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="23" r="12" fill="${bg}" stroke="#23224d" stroke-width="3"/>${eyes}${m}</svg>`;
+}
 
 // ------------------------------------------------------------------ identity
 const ls = {
@@ -26,6 +42,7 @@ const S = {
   phase: 'LOBBY', turn: 0, totalTurns: 0, round: 1, rounds: 1, drawerId: null,
   hint: '', word: null, endsAt: 0, drawMs: 0, offset: 0, players: [], guessed: false,
   color: COLORS[0], size: SIZES[1], eraser: false,
+  avatar: ls.get('cd_avatar') || `${AVATAR_BG[0]}|shades|smile`,
 };
 const nowMs = () => Date.now() + S.offset;
 const canDraw = () => S.phase === 'DRAWING' && S.drawerId === playerId;
@@ -56,6 +73,28 @@ function readName() {
   return name;
 }
 $('#name').value = ls.get('cd_name') || '';
+function renderAvatarPicker() {
+  const [curBg, curAcc, curMouth] = S.avatar.split('|');
+  const prev = $('#avatar-preview');
+  prev.style.background = 'transparent';
+  prev.style.border = 'none';
+  prev.innerHTML = avatarSvg(curBg || AVATAR_BG[0], curAcc || 'shades', curMouth || 'smile');
+}
+const step = (arr, cur, d) => arr[(arr.indexOf(cur) + d + arr.length) % arr.length];
+const setAv = (bg, acc, m) => { S.avatar = `${bg}|${acc}|${m}`; ls.set('cd_avatar', S.avatar); renderAvatarPicker(); };
+$('#av-acc-prev').onclick = () => { const [b, a, m] = S.avatar.split('|'); setAv(b, step(AVATAR_ACC, a, -1), m); };
+$('#av-acc-next').onclick = () => { const [b, a, m] = S.avatar.split('|'); setAv(b, step(AVATAR_ACC, a, 1), m); };
+$('#av-mouth-prev').onclick = () => { const [b, a, m] = S.avatar.split('|'); setAv(b, a, step(AVATAR_MOUTH, m, -1)); };
+$('#av-mouth-next').onclick = () => { const [b, a, m] = S.avatar.split('|'); setAv(b, a, step(AVATAR_MOUTH, m, 1)); };
+$('#av-color-prev').onclick = () => { const [b, a, m] = S.avatar.split('|'); setAv(step(AVATAR_BG, b, -1), a, m); };
+$('#av-color-next').onclick = () => { const [b, a, m] = S.avatar.split('|'); setAv(step(AVATAR_BG, b, 1), a, m); };
+$('#av-rand').onclick = () => setAv(
+  AVATAR_BG[Math.floor(Math.random() * AVATAR_BG.length)],
+  AVATAR_ACC[Math.floor(Math.random() * AVATAR_ACC.length)],
+  AVATAR_MOUTH[Math.floor(Math.random() * AVATAR_MOUTH.length)],
+);
+$('#name').addEventListener('input', renderAvatarPicker);
+renderAvatarPicker();
 if (/^#[A-Za-z0-9]{5}$/.test(location.hash)) $('#code').value = location.hash.slice(1).toUpperCase();
 
 $('#btn-create').onclick = async () => {
@@ -131,7 +170,7 @@ function connect() {
   ws.onopen = () => {
     S.retries = 0;
     $('#banner').hidden = true;
-    ws.send(JSON.stringify({ t: 'join', code: S.code, playerId, name: S.name }));
+    ws.send(JSON.stringify({ t: 'join', code: S.code, playerId, name: S.name, avatar: S.avatar }));
   };
   ws.onmessage = (e) => handle(JSON.parse(e.data));
   ws.onclose = (ev) => {
@@ -392,7 +431,11 @@ function renderPlayers() {
     const av = document.createElement('div');
     av.className = 'avatar';
     av.textContent = p.name[0]?.toUpperCase() || '?';
-    av.style.background = AVATAR_BG[parseInt(p.id.slice(0, 4), 16) % AVATAR_BG.length];
+    const [bg, acc, mouth] = (p.avatar || '').split('|');
+    const fill = bg || AVATAR_BG[parseInt(p.id.slice(0, 4), 16) % AVATAR_BG.length];
+    av.style.background = 'transparent';
+    av.style.border = 'none';
+    av.innerHTML = avatarSvg(fill, acc || 'shades', mouth || 'smile');
     const nm = document.createElement('span');
     nm.className = 'pname';
     nm.textContent = p.id === playerId ? `${p.name} (you)` : p.name;

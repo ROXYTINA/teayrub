@@ -13,7 +13,7 @@ services:
       REDIS_URL: redis://redis:6379
       TASK_ID: server1
       AZ: local-az-1
-      DRAW_MS: "60000"
+      DRAW_MS: "35000"
     depends_on: [redis]
   server2:
     <<: *server
@@ -21,7 +21,7 @@ services:
       REDIS_URL: redis://redis:6379
       TASK_ID: server2
       AZ: local-az-2
-      DRAW_MS: "60000"
+      DRAW_MS: "35000"
 
   lb:
     image: nginx:1.27-alpine
