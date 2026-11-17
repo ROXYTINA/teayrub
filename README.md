@@ -1,8 +1,8 @@
-# CloudDraw 🎨☁️
+# TeayRub 🎨☁️
 
 **Draw it. Guess it. Scale it.**
 
-CloudDraw is a real-time multiplayer draw-and-guess web game built with a notebook-and-marker aesthetic and deployed on AWS (`ap-southeast-1`) across two Availability Zones.
+TeayRub is a real-time multiplayer draw-and-guess web game built with a notebook-and-marker aesthetic and deployed on AWS (`ap-southeast-1`) across two Availability Zones.
 
 ---
 
