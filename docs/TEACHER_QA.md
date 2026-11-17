@@ -67,3 +67,20 @@
 
 20. **How does the client recover if a WebSocket drops mid-game?**
     - The client reconnects using exponential backoff with jitter and receives a full `state` snapshot from Redis, including the canvas stroke history for replay.
+
+## Phase 4: Persistence & Artwork Storage
+
+21. **Why upload artwork PNGs directly from browser to S3 using a presigned URL instead of `POST`ing to Node.js?**
+    - Uploading directly to S3 offloads binary bandwidth, memory, and CPU from the ECS Fargate tasks, and avoids ALB payload limits.
+
+22. **How do you prevent anyone from abusing a presigned URL to upload huge or unauthorized files?**
+    - The server only issues a presigned `PUT` URL after verifying the turn ended with a correct guess, and scopes the URL to a specific object key, `Content-Type: image/png`, and short expiration.
+
+23. **Why choose DynamoDB over RDS (PostgreSQL/MySQL) for leaderboard, matches, and gallery?**
+    - DynamoDB on-demand scales automatically, costs \$0 when idle, requires no VPC-bound database server management, and fits simple key-value/document access patterns.
+
+24. **How is the DynamoDB partition key designed for `leaderboard` and `matches`?**
+    - `leaderboard` uses `name` as the partition key for atomic `ADD` score/win counters; `matches` uses `matchId` (`timestamp-roomCode`) for unique match records.
+
+25. **Why keep local dev on Redis/disk behind the same `store.js` interface?**
+    - Developers can test the full game, leaderboard, and artwork flow locally without needing an AWS account or internet access.

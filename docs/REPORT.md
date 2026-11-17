@@ -39,3 +39,9 @@ To support horizontal scaling and survive server crashes without sticky sessions
 - **Timer Ownership**: A Redis distributed lock renewed every second ensures exactly one server drives a room's countdown.
 - **Atomic Operations**: Lua scripts handle compare-and-set phase transitions and race-free scoring.
 - **Resilience**: Heartbeat-based presence prevents ghost players, and clients reconnect with exponential backoff + jitter to receive a full state and stroke replay.
+
+## 5. Persistence & Artwork Storage (Phase 4)
+
+Durable data (leaderboard, match history, word bank, and gallery metadata) is abstracted behind `server/src/store.js`, which switches between local Redis and AWS DynamoDB via `USE_DYNAMO=true`.
+
+- **Direct-to-S3 Artwork**: When a round ends with a correct guess, the drawer's browser exports the canvas to PNG and uploads it directly to S3 using a short-lived presigned `PUT` URL, keeping binary traffic off the compute tier.
