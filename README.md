@@ -1,4 +1,4 @@
-# TeayRub 🎨☁️
+# TeayRub
 
 **Draw it. Guess it. Scale it.**
 
@@ -6,7 +6,7 @@ TeayRub is a real-time multiplayer draw-and-guess web game built with a notebook
 
 ---
 
-## ✨ Features
+## Features
 
 - **5-Character Room Codes**: Create a room or join friends instantly—no account required.
 - **Real-Time Shared Canvas**: Smooth HTML5 drawing with normalized `0..1` coordinates (works on both phones and desktops) and ~40 ms stroke batching.
@@ -16,7 +16,7 @@ TeayRub is a real-time multiplayer draw-and-guess web game built with a notebook
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 - **Frontend**: Plain HTML5 / CSS3 / ES Modules (`web/`), zero build step, hosted on **S3 + CloudFront**.
 - **Backend**: Stateless Node.js 20 (`Express` + `ws` + `ioredis`) on **ECS Fargate** across 2 AZs behind an **ALB**.
@@ -28,7 +28,7 @@ See [docs/diagrams/architecture.md](docs/diagrams/architecture.md) for full arch
 
 ---
 
-## 🚀 Run Locally (Docker Compose)
+## Run Locally (Docker Compose)
 
 Start the local multi-instance stack (`nginx` load balancer + 2 stateless Node.js servers + Redis):
 
@@ -50,7 +50,7 @@ node smoke.js http://localhost:8080 http://localhost:8080
 
 ---
 
-## ☁️ Deploy to AWS (`ap-southeast-1`)
+## Deploy to AWS (`ap-southeast-1`)
 
 > **Cost Note**: Running the full AWS stack costs ~\$0.14/hr (~\$1.13 per 8-hour demo day). Always run `terraform destroy` when finished.
 
@@ -90,7 +90,7 @@ terraform destroy
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 - [Project Plan](docs/PROJECT_PLAN.md)
 - [Architecture & VPC Diagrams](docs/diagrams/architecture.md)
