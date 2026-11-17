@@ -1,0 +1,9 @@
+{
+  "animals": ["elephant","giraffe","penguin","octopus","kangaroo","butterfly","crocodile","dolphin","hedgehog","flamingo","squirrel","jellyfish","peacock","turtle","spider","rabbit","monkey","shark","owl","camel"],
+  "food": ["pizza","hamburger","ice cream","sushi","spaghetti","pancake","popcorn","watermelon","banana","cupcake","sandwich","noodles","donut","pineapple","chocolate","cheese","egg","coconut","mango","lollipop"],
+  "objects": ["umbrella","telescope","backpack","bicycle","headphones","light bulb","scissors","key","clock","candle","glasses","guitar","camera","ladder","suitcase","toothbrush","balloon","anchor","compass","trophy"],
+  "places": ["lighthouse","castle","pyramid","volcano","island","waterfall","bridge","airport","circus","farm","temple","desert","igloo","windmill","skyscraper","campsite","beach","cave","museum","stadium"],
+  "actions": ["dancing","sleeping","swimming","juggling","fishing","skateboarding","painting","cooking","climbing","sneezing","laughing","surfing","reading","singing","running","skiing","jumping","hiking","yawning","hugging"],
+  "nature": ["rainbow","tornado","snowman","mountain","sunflower","cactus","moon","lightning","campfire","iceberg","mushroom","palm tree","star","cloud","leaf","rainstorm","snowflake","forest","river","sunset"],
+  "fun": ["pirate","robot","astronaut","wizard","dragon","ghost","mermaid","ninja","unicorn","vampire","superhero","alien","scarecrow","clown","knight","snowboard","rocket","treasure","submarine","spaceship"]
+}
