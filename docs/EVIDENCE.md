@@ -14,3 +14,8 @@ This file records verified test outputs, screenshots, and metrics collected acro
 ## Phase 2: Real-Time Game Server
 - `node --check server/src/index.js server/src/ws.js server/src/game.js server/src/api.js` passed (exit code 0).
 - *Note*: Live `smoke.js` run is pending `npm install` and a running Redis instance in the local environment.
+
+## Phase 3: Stateless Multi-Instance with Redis
+- `node --check server/src/redis.js server/src/bus.js` passed (exit code 0).
+- Verified [docker-compose.yml](file:///d:/year5/cloud/project/teayrub/docker-compose.yml) (2 servers + Redis + nginx) and [nginx.conf](file:///d:/year5/cloud/project/teayrub/nginx.conf) (round-robin, WebSocket upgrade, 120s timeout).
+- *Note*: Live `docker compose up` and `kill -9` failover test pending Docker availability.

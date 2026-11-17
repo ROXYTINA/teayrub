@@ -14,3 +14,7 @@
 | **WebSocket** | A full-duplex, persistent communication protocol over a single TCP connection, ideal for real-time games. |
 | **Server-Authoritative** | An architecture where the server owns the source of truth for game rules, timers, and scoring to prevent client cheating. |
 | **Rate Limiting** | Restricting how many requests or messages a client can send in a time window to protect against abuse and floods. |
+| **Distributed Lock** | A shared lock stored in Redis with a TTL so only one server instance owns a room's timer at a time. |
+| **Lua Script (Redis)** | A script executed atomically inside Redis to perform read-check-write operations without race conditions. |
+| **Sticky Sessions** | Routing a client's requests always to the same backend server; avoided here by keeping servers stateless. |
+| **Exponential Backoff with Jitter** | Increasing retry delays (`1s, 2s, 4s...`) plus randomness so reconnecting clients don't thundering-herd the server. |

@@ -30,3 +30,12 @@ The backend is a single Node.js 20 service (`Express` + `ws` + `ioredis`) servin
 - **State Machine**: `LOBBY -> DRAWING -> ROUND_END -> MATCH_END -> LOBBY`.
 - **Security & Fair Play**: The server selects the secret word, sends it exclusively to the drawer, reveals progressive hints to guessers, scores based on remaining time, and blocks word leaks in chat.
 - **Health Checks**: `/healthz` returns `200 OK` independently of Redis, while `/readyz` checks Redis connectivity.
+
+## 4. Stateless Multi-Instance Design with Redis (Phase 3)
+
+To support horizontal scaling and survive server crashes without sticky sessions, all game state is stored in Redis using hash-tagged keys (`room:{CODE}`).
+
+- **Cross-Server Sync**: Servers subscribe to Redis Pub/Sub channels only for rooms with active local players.
+- **Timer Ownership**: A Redis distributed lock renewed every second ensures exactly one server drives a room's countdown.
+- **Atomic Operations**: Lua scripts handle compare-and-set phase transitions and race-free scoring.
+- **Resilience**: Heartbeat-based presence prevents ghost players, and clients reconnect with exponential backoff + jitter to receive a full state and stroke replay.

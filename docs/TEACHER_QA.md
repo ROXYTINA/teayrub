@@ -50,3 +50,20 @@
 
 15. **What is the purpose of `SIGTERM` graceful shutdown in `index.js`?**
     - When ECS replaces or scales in a task, it sends `SIGTERM`. Closing WebSockets with code `1012` (Service Restart) tells clients to reconnect immediately to another healthy task.
+
+## Phase 3: Stateless Multi-Instance & Redis
+
+16. **Why don't we need sticky sessions on the load balancer (nginx / ALB)?**
+    - Because all room state, stroke history, and scores live in Redis, not in Node.js memory. Any server can handle any player's WebSocket or REST request.
+
+17. **What happens if the server holding a room's timer lock crashes (`kill -9`)?**
+    - The Redis lock has a short TTL and is renewed every second. When the owner dies, the lock expires and another server with players in that room acquires it and continues the round timer.
+
+18. **Why use Redis Lua scripts for phase transitions and scoring?**
+    - Lua scripts execute atomically on the Redis server, preventing race conditions (e.g., two servers ending the same round twice or two guesses awarding duplicate points).
+
+19. **Why use `room:{CODE}` hash tags in Redis keys?**
+    - Hash tags force all keys for a single room into the same hash slot, which is required for multi-key Lua scripts in clustered Redis.
+
+20. **How does the client recover if a WebSocket drops mid-game?**
+    - The client reconnects using exponential backoff with jitter and receives a full `state` snapshot from Redis, including the canvas stroke history for replay.
