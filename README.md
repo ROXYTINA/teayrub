@@ -88,14 +88,3 @@ cd infra
 terraform destroy
 ```
 
----
-
-## Documentation
-
-- [Project Plan](docs/PROJECT_PLAN.md)
-- [Architecture & VPC Diagrams](docs/diagrams/architecture.md)
-- [Final Report](docs/REPORT.md)
-- [Teacher Q&A (40 Questions + 10 Scenarios)](docs/TEACHER_QA.md)
-- [Glossary](docs/GLOSSARY.md)
-- [Evidence Log](docs/EVIDENCE.md)
-- [Phase Recaps (0–8)](docs/recap/)
