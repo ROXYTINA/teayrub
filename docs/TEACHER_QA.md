@@ -118,3 +118,20 @@
 
 35. **How does the IAM Task Role enforce least privilege?**
     - The task role grants access *only* to the specific DynamoDB tables, the `artwork` S3 bucket (`PutObject`/`GetObject`), and CloudWatch `PutMetricData`—nothing else in the AWS account.
+
+## Phase 7: Auto-Scaling, Load Testing & Failover
+
+36. **Why is `ConnectionsPerTask` a better scaling metric than CPU for a WebSocket game?**
+    - WebSocket servers can hold hundreds of concurrent connections with low CPU usage; connection/memory limits or event-loop lag become bottlenecks before CPU hits 70%.
+
+37. **Why use fast scale-out and slow scale-in cooldowns?**
+    - Fast scale-out absorbs sudden player surges without dropping connections; slow scale-in prevents thrashing (repeatedly adding and removing tasks) and minimizes WebSocket reconnects.
+
+38. **What happens to players when an entire AZ goes down?**
+    - Players connected to tasks in the failed AZ see `"Reconnecting…"` for a few seconds, reconnect with exponential backoff + jitter to tasks in the surviving AZ, and receive a full state + canvas replay from Redis.
+
+39. **What is the expected RTO (Recovery Time Objective) for ECS tasks vs ElastiCache Redis?**
+    - ECS WebSocket reconnect takes ~2–5 seconds (client backoff + ALB routing to surviving AZ). ElastiCache Multi-AZ automatic failover typically completes in ~15–30 seconds.
+
+40. **Why measure p95 and p99 stroke latency instead of just average latency?**
+    - Averages hide tail spikes. p95 and p99 show what the slowest 5% and 1% of players experience, which directly reflects real-time responsiveness under load.

@@ -60,3 +60,9 @@ The full AWS stack is provisioned via Terraform (`infra/app.tf`, `infra/data.tf`
 - **Compute**: ECS Fargate tasks (`linux/amd64`) behind an ALB with `/healthz` health checks, 120 s idle timeout, and 30 s deregistration delay.
 - **Data**: ElastiCache Redis Multi-AZ with automatic failover, 4 on-demand DynamoDB tables, and 2 S3 buckets (`site` and `artwork` with CORS + lifecycle rules).
 - **Edge**: CloudFront unifies `/`, `/artwork/*`, `/api/*`, and `/ws` under one HTTPS domain.
+
+## 8. Auto-Scaling, Load Testing & Failover (Phase 7)
+
+- **Auto-Scaling**: ECS Application Auto Scaling uses target-tracking policies on custom CloudWatch metric `ConnectionsPerTask` and CPU (min 2 tasks across 2 AZs, max 10) with fast scale-out and slow scale-in.
+- **Load Testing**: `loadtest/bots.js` simulates 40 rooms × 8 bots (~320 players) to measure p50/p95/p99 stroke latency and error rates.
+- **Failover Drill**: `scripts/simulate-az-failure.sh` stops all tasks in one AZ and promotes the ElastiCache Redis replica to verify automatic recovery.

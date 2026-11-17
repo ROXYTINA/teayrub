@@ -31,3 +31,8 @@ This file records verified test outputs, screenshots, and metrics collected acro
 ## Phase 6: Cloud Hosting
 - Reviewed [app.tf](file:///d:/year5/cloud/project/teayrub/infra/app.tf), [data.tf](file:///d:/year5/cloud/project/teayrub/infra/data.tf), [cdn.tf](file:///d:/year5/cloud/project/teayrub/infra/cdn.tf), [deploy-server.sh](file:///d:/year5/cloud/project/teayrub/scripts/deploy-server.sh), and [deploy-web.sh](file:///d:/year5/cloud/project/teayrub/scripts/deploy-web.sh).
 - *Note*: Live AWS deployment and 2-phone CloudFront test pending `terraform` + AWS CLI credentials.
+
+## Phase 7: Auto-Scaling, Load Testing & Failover
+- `node --check server/src/metrics.js loadtest/bots.js` passed (exit code 0).
+- Reviewed [simulate-az-failure.sh](file:///d:/year5/cloud/project/teayrub/scripts/simulate-az-failure.sh).
+- *Note*: Live 320-bot load test (p50/p95/p99), CloudWatch scale-out screenshots, and AZ/Redis failover RTO measurements are pending live AWS deployment.

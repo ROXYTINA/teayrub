@@ -29,3 +29,6 @@
 | **CloudFront** | AWS's global Content Delivery Network (CDN) that terminates HTTPS and routes static and dynamic paths. |
 | **ElastiCache Multi-AZ** | A managed Redis deployment with a primary node in AZ-1 and a synchronous/async replica in AZ-2 for automatic failover. |
 | **IAM Task Role** | An IAM role assumed by an ECS container giving the application code temporary, scoped AWS API permissions. |
+| **Target Tracking Scaling** | An auto-scaling policy that adjusts task count automatically to keep a chosen metric (e.g., `ConnectionsPerTask`) near a target value. |
+| **Cooldown (Scale-Out / Scale-In)** | A waiting period after a scaling action before another scaling action can trigger, preventing oscillation. |
+| **RTO (Recovery Time Objective)** | The maximum acceptable time it takes to restore service after a failure (e.g., AZ or Redis failover). |
