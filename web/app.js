@@ -17,8 +17,8 @@ const ss = {
 };
 // getRandomValues works on plain-http LAN addresses too (randomUUID does not).
 const randomId = () => [...crypto.getRandomValues(new Uint8Array(16))].map((b) => b.toString(16).padStart(2, '0')).join('');
-let playerId = ls.get('cd_id');
-if (!playerId) { playerId = randomId(); ls.set('cd_id', playerId); }
+let playerId = ss.get('cd_id');
+if (!playerId) { playerId = randomId(); ss.set('cd_id', playerId); }
 
 // ------------------------------------------------------------------ state
 const S = {
