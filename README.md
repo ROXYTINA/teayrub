@@ -1,50 +1,46 @@
-<p align="center">
-  <img src="web/logo.jpg" alt="TeayRub" width="280">
-</p>
-
-# TeayRub
-
-**Draw it. Guess it. Scale it.**
-
-TeayRub is a real-time multiplayer draw-and-guess web game built with a notebook-and-marker aesthetic and deployed on AWS (`ap-southeast-1`) across two Availability Zones.
-
----
-
-## Features
-
-- **5-Character Room Codes**: Create a room or join friends instantly—no account required.
-- **Real-Time Shared Canvas**: Smooth HTML5 drawing with normalized `0..1` coordinates (works on both phones and desktops) and ~40 ms stroke batching.
-- **Fair Play & Live Scoring**: Server-authoritative word selection, progressive letter hints, time-based scoring, and automatic chat leak prevention.
-- **Hall of Fame & Leaderboard**: Rounds with a correct guess are saved as PNGs directly to S3 via presigned `PUT` URLs.
-- **Stateless & Resilient**: All game state lives in Redis; servers sync via Redis Pub/Sub and recover automatically from server or AZ failures.
+<div align="center">
+  <img src="web/logo.jpg" alt="TeayRub" width="260">
+  <p><strong>Real-time multiplayer draw-and-guess on AWS</strong></p>
+  <p>
+    <a href="#run-locally">Run Locally</a> •
+    <a href="#how-to-play">How to Play</a> •
+    <a href="#architecture">Architecture</a> •
+    <a href="#deploy-to-aws">Deploy to AWS</a>
+  </p>
+</div>
 
 ---
+
+**TeayRub** is a low-latency, multiplayer draw-and-guess web game. Players join rooms with a 5-character code, take turns sketching a secret word on a shared canvas, and race to guess in real time.
+
+## How to Play
+
+1. Enter your name and click **Create a room** (or enter a 5-character code to **Join**).
+2. Share the room code with friends.
+3. On your turn, draw the secret word—everyone else guesses in chat for time-based points.
+4. Rounds with a correct guess are saved to the **Hall of Fame**.
 
 ## Architecture
 
-- **Frontend**: Plain HTML5 / CSS3 / ES Modules (`web/`), zero build step, hosted on **S3 + CloudFront**.
-- **Backend**: Stateless Node.js 20 (`Express` + `ws` + `ioredis`) on **ECS Fargate** across 2 AZs behind an **ALB**.
-- **State & Pub/Sub**: **ElastiCache Redis (Multi-AZ)** with distributed timer locks and atomic Lua scripts.
-- **Persistence**: **Amazon DynamoDB** (on-demand) for leaderboard, match history, word bank, and gallery metadata.
-- **Infrastructure**: 100% **Terraform** (`infra/`).
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Edge / CDN** | Amazon CloudFront + S3 | Serves static site (`/`) and saved artwork (`/artwork/*`) |
+| **Compute** | Node.js 20 (`Express` + `ws`) on ECS Fargate | Stateless REST & WebSocket servers across 2 AZs |
+| **State & Sync** | ElastiCache Redis (Multi-AZ) | Room state, Pub/Sub, distributed timer locks, Lua scoring |
+| **Database** | Amazon DynamoDB (On-Demand) | Word bank, leaderboard, match history, gallery metadata |
+| **IaC** | Terraform | Full VPC, security groups, compute, and data provisioning |
 
-See [docs/diagrams/architecture.md](docs/diagrams/architecture.md) for full architecture and VPC diagrams.
+## Run Locally
 
----
-
-## Run Locally (Docker Compose)
-
-Start the local multi-instance stack (`nginx` load balancer + 2 stateless Node.js servers + Redis):
+Start the local multi-instance stack (`nginx` + 2 stateless servers + Redis):
 
 ```powershell
 docker compose up --build
 ```
 
-1. Open **two browser tabs** to `http://localhost:8080`.
-2. Create a room in Tab 1 and join with the 5-character code in Tab 2.
-3. Check the footer in each tab to see which server (`server1` / `server2`) you are connected to.
+Open **two browser tabs** at `http://localhost:8080`, create a room in Tab 1, and join with the code in Tab 2. The footer shows which server (`server1` or `server2`) each tab is connected to.
 
-### Run the Automated Smoke Test
+**Run the automated smoke test:**
 
 ```powershell
 cd loadtest
@@ -52,14 +48,12 @@ npm install
 node smoke.js http://localhost:8080 http://localhost:8080
 ```
 
----
+## Deploy to AWS
 
-## Deploy to AWS (`ap-southeast-1`)
-
-> **Cost Note**: Running the full AWS stack costs ~\$0.14/hr (~\$1.13 per 8-hour demo day). Always run `terraform destroy` when finished.
+> **Cost**: ~\$0.14/hr (~\$1.13 per 8-hour demo day) in `ap-southeast-1`. Run `terraform destroy` when finished.
 
 ```powershell
-# 1. Create ECR repository first
+# 1. Create ECR repository
 cd infra
 terraform init
 terraform apply -target=aws_ecr_repository.app
@@ -67,28 +61,24 @@ terraform apply -target=aws_ecr_repository.app
 # 2. Build & push server image
 ..\scripts\deploy-server.sh
 
-# 3. Provision full AWS stack
+# 3. Provision full stack
 terraform apply
 
-# 4. Deploy frontend & seed word bank
+# 4. Deploy frontend & seed words
 ..\scripts\deploy-web.sh
 cd ..\server && npm run seed-words
 ```
 
-### Load Test & Failover Demo
+**Load test (320 simulated players) & failover drill:**
 
 ```powershell
-# 320 simulated players (40 rooms x 8 bots)
 node loadtest/bots.js https://<your-cloudfront-domain> 40 8
-
-# Simulate AZ + Redis failover
 ./scripts/simulate-az-failure.sh
 ```
 
-### Teardown (Stop All Charges)
+**Teardown:**
 
 ```powershell
 cd infra
 terraform destroy
 ```
-
