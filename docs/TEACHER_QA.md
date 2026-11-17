@@ -84,3 +84,20 @@
 
 25. **Why keep local dev on Redis/disk behind the same `store.js` interface?**
     - Developers can test the full game, leaderboard, and artwork flow locally without needing an AWS account or internet access.
+
+## Phase 5: AWS Network & Security
+
+26. **What is the difference between a Public Subnet and a Private Subnet in AWS?**
+    - A Public Subnet has a route (`0.0.0.0/0`) to an Internet Gateway (IGW). A Private Subnet has no direct route to the IGW (it uses a NAT Gateway for outbound-only internet, or has no internet route at all).
+
+27. **Why does the Private-Data subnet (Redis) have NO route to the internet?**
+    - Redis never needs to initiate outbound internet connections. Removing the internet route completely eliminates internet-based exfiltration or inbound exposure.
+
+28. **Why use S3 and DynamoDB Gateway Endpoints?**
+    - Gateway Endpoints are free (\$0) and route S3/DynamoDB traffic over the private AWS backbone instead of through the NAT Gateway, improving security and reducing NAT data-processing charges.
+
+29. **What is the difference between a Security Group (SG) and a Network ACL (NACL)?**
+    - Security Groups are stateful (return traffic is automatically allowed) and attach to resources/ENIs. NACLs are stateless (require explicit inbound and outbound rules) and attach to subnets.
+
+30. **How does the Security Group chain enforce least privilege?**
+    - `sg-alb` allows `80/443` from `0.0.0.0/0`; `sg-app` allows `3000` **only** from `sg-alb`; `sg-redis` allows `6379` **only** from `sg-app`.

@@ -23,3 +23,7 @@ This file records verified test outputs, screenshots, and metrics collected acro
 ## Phase 4: Persistence & Artwork Storage
 - `node --check server/src/store.js server/src/words.js server/scripts/seed-words.js` passed (exit code 0).
 - Verified dual-backend `store.js` (`USE_DYNAMO` toggle) and presigned URL artwork flow.
+
+## Phase 5: AWS Network & Security (Terraform)
+- Reviewed [network.tf](file:///d:/year5/cloud/project/teayrub/infra/network.tf) (VPC `10.0.0.0/16`, 6 subnets across 2 AZs, IGW, NAT Gateway, S3/DynamoDB Gateway Endpoints, SG chain).
+- *Note*: `terraform` CLI is not installed in this local environment, so `terraform fmt`/`validate`/`plan` were not executed here.

@@ -45,3 +45,11 @@ To support horizontal scaling and survive server crashes without sticky sessions
 Durable data (leaderboard, match history, word bank, and gallery metadata) is abstracted behind `server/src/store.js`, which switches between local Redis and AWS DynamoDB via `USE_DYNAMO=true`.
 
 - **Direct-to-S3 Artwork**: When a round ends with a correct guess, the drawer's browser exports the canvas to PNG and uploads it directly to S3 using a short-lived presigned `PUT` URL, keeping binary traffic off the compute tier.
+
+## 6. AWS Network & Security (Phase 5)
+
+The network layer is defined in `infra/network.tf` using a 3-tier, 2-AZ VPC (`10.0.0.0/16` in `ap-southeast-1`):
+- **Public Subnets** (`10.0.1.0/24`, `10.0.2.0/24`): Host the ALB and NAT Gateway.
+- **Private-App Subnets** (`10.0.11.0/24`, `10.0.12.0/24`): Host ECS Fargate tasks with outbound-only internet via NAT and private S3/DynamoDB access via Gateway Endpoints.
+- **Private-Data Subnets** (`10.0.21.0/24`, `10.0.22.0/24`): Host ElastiCache Redis with zero internet route.
+- **Security Group Chain**: `Internet -> sg-alb (80/443) -> sg-app (3000) -> sg-redis (6379)`.
