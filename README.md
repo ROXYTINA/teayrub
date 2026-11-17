@@ -1,141 +1,101 @@
-# CloudDraw: real-time multiplayer draw & guess
+# CloudDraw 🎨☁️
 
-Players join a room with a 5-character code, take turns drawing a secret word on a shared canvas,
-and everyone else races to guess it. Built as a cloud-native, stateless, multi-AZ system.
+**Draw it. Guess it. Scale it.**
 
-```
-Browser ──HTTPS/WSS──► CloudFront ──► S3 (frontend)           /
-                          │      └──► S3 (artwork PNGs)       /artwork/*
-                          └─ /api/*, /ws ──► ALB (AZ-1 + AZ-2)
-                                               │
-                              ECS Fargate game-server tasks (stateless, auto-scaled, both AZs)
-                                  │                 │                 │
-                        ElastiCache Redis       DynamoDB           S3 (presigned PUT
-                        game state + Pub/Sub    words, leaderboard  from the browser)
-                        primary AZ-1/replica AZ-2  matches, gallery
-```
+CloudDraw is a real-time multiplayer draw-and-guess web game built with a notebook-and-marker aesthetic and deployed on AWS (`ap-southeast-1`) across two Availability Zones.
 
-## How it works (the three ideas)
+---
 
-1. **Servers are stateless.** A socket only remembers `{roomCode, playerId}`. All game state lives in Redis,
-   so any server can serve any player and a crash or scale-in never kills a match.
-2. **Redis Pub/Sub joins the servers.** Each server subscribes to `ch:{ROOM}` only while it has a local player
-   in that room. A stroke goes *browser -> server -> Redis -> every server with players in the room -> browsers*.
-3. **One owner per room.** A short Redis lock (`ownLock`, renewed every second) decides which server advances a
-   room's timers. If that server dies, the lock expires and another server takes over within ~3 s.
+## ✨ Features
 
-Other details worth mentioning in your report: the secret word is sent only to the drawer (private
-`to:` envelope); scoring is an atomic Lua script; strokes are batched every 40 ms and stored in a capped Redis list
-so late joiners and reconnecting clients get a canvas replay; presence is heartbeat-based so a crashed server
-can't leave "ghost" players; `/healthz` deliberately does not touch Redis so a Redis failover cannot make the ALB
-kill healthy tasks.
+- **5-Character Room Codes**: Create a room or join friends instantly—no account required.
+- **Real-Time Shared Canvas**: Smooth HTML5 drawing with normalized `0..1` coordinates (works on both phones and desktops) and ~40 ms stroke batching.
+- **Fair Play & Live Scoring**: Server-authoritative word selection, progressive letter hints, time-based scoring, and automatic chat leak prevention.
+- **Hall of Fame & Leaderboard**: Rounds with a correct guess are saved as PNGs directly to S3 via presigned `PUT` URLs.
+- **Stateless & Resilient**: All game state lives in Redis; servers sync via Redis Pub/Sub and recover automatically from server or AZ failures.
 
-## Project layout
+---
 
-```
-clouddraw/
-├── web/                 static frontend (index.html, style.css, app.js), no build step
-├── server/              Node.js game server (Express + ws + ioredis)
-│   ├── src/game.js        game state machine, scoring, room ownership
-│   ├── src/ws.js          WebSocket layer + Pub/Sub fan-out
-│   ├── src/api.js         REST: rooms, leaderboard, gallery, presigned uploads
-│   ├── src/store.js       DynamoDB (cloud) or Redis (local) persistence
-│   ├── src/metrics.js     custom CloudWatch metric for auto-scaling
-│   ├── data/words.json    word bank (seed into DynamoDB with `npm run seed-words`)
-│   └── Dockerfile
-├── infra/               Terraform: VPC, 2 AZs, ALB, ECS, Redis, DynamoDB, S3, CloudFront, auto-scaling
-├── loadtest/            bots.js (N rooms x M bots, latency stats) and smoke.js (end-to-end test)
-├── scripts/             deploy-server.sh, deploy-web.sh, simulate-az-failure.sh
-├── docker-compose.yml   local stack: nginx (as the ALB) + 2 servers + Redis
-└── nginx.conf
-```
+## 🏗️ Architecture
 
-## Run it locally
+- **Frontend**: Plain HTML5 / CSS3 / ES Modules (`web/`), zero build step, hosted on **S3 + CloudFront**.
+- **Backend**: Stateless Node.js 20 (`Express` + `ws` + `ioredis`) on **ECS Fargate** across 2 AZs behind an **ALB**.
+- **State & Pub/Sub**: **ElastiCache Redis (Multi-AZ)** with distributed timer locks and atomic Lua scripts.
+- **Persistence**: **Amazon DynamoDB** (on-demand) for leaderboard, match history, word bank, and gallery metadata.
+- **Infrastructure**: 100% **Terraform** (`infra/`).
 
-**Option A: Docker (recommended, mirrors the cloud).** Two servers behind a load balancer; open the page in two tabs.
-They usually land on different servers, and the footer shows which one you are on.
+See [docs/diagrams/architecture.md](docs/diagrams/architecture.md) for full architecture and VPC diagrams.
 
-```bash
+---
+
+## 🚀 Run Locally (Docker Compose)
+
+Start the local multi-instance stack (`nginx` load balancer + 2 stateless Node.js servers + Redis):
+
+```powershell
 docker compose up --build
-# open http://localhost:8080 in two tabs (or on your phone: http://<your-LAN-ip>:8080)
 ```
 
-**Option B: no Docker.**
+1. Open **two browser tabs** to `http://localhost:8080`.
+2. Create a room in Tab 1 and join with the 5-character code in Tab 2.
+3. Check the footer in each tab to see which server (`server1` / `server2`) you are connected to.
 
-```bash
-redis-server &                      # or: docker run -p 6379:6379 redis:7-alpine
-cd server && npm install && npm run dev
-# open http://localhost:3000
+### Run the Automated Smoke Test
+
+```powershell
+cd loadtest
+npm install
+node smoke.js http://localhost:8080 http://localhost:8080
 ```
 
-Tip: `DRAW_MS=15000 ROUNDS=1 npm run dev` shortens turns while testing.
+---
 
-### Tests
+## ☁️ Deploy to AWS (`ap-southeast-1`)
 
-```bash
-cd loadtest && npm install
-node smoke.js ws://localhost:3001 ws://localhost:3002     # 2 servers on different ports, shared Redis
-node bots.js --url ws://localhost:8080 --rooms 40 --per-room 8 --duration 120   # ~320 players
-```
+> **Cost Note**: Running the full AWS stack costs ~\$0.14/hr (~\$1.13 per 8-hour demo day). Always run `terraform destroy` when finished.
 
-Verified locally while building this: the smoke test (18 checks: cross-server strokes and chat, word privacy, scoring,
-full match, leaderboard) passes; 72 bots over two servers show p95 stroke latency under 10 ms; killing one server with
-`kill -9` mid-game moves its room locks to the survivor and the games keep running.
-**Not verified:** the browser UI was written but not click-tested here, and the Terraform was not applied or
-`terraform validate`d (no Terraform in the build sandbox). Expect to fix small things on first run.
-
-## Deploy to AWS
-
-Prereqs: AWS CLI configured, Terraform >= 1.5, Docker. **Set a budget alert first** (Billing -> Budgets).
-
-```bash
+```powershell
+# 1. Create ECR repository first
 cd infra
 terraform init
-terraform apply -target=aws_ecr_repository.app      # 1) create the image repo first
-cd .. && ./scripts/deploy-server.sh                  # 2) build + push the image
-cd infra && terraform apply                          # 3) everything else (ALB, ECS, Redis, ...)
-cd .. && ./scripts/deploy-web.sh                     # 4) upload the frontend + invalidate CloudFront
-cd server && USE_DYNAMO=true TABLE_PREFIX=clouddraw AWS_REGION=ap-southeast-1 npm run seed-words   # 5) word bank
-terraform -chdir=../infra output site_url            # open this URL
+terraform apply -target=aws_ecr_repository.app
+
+# 2. Build & push server image
+..\scripts\deploy-server.sh
+
+# 3. Provision full AWS stack
+terraform apply
+
+# 4. Deploy frontend & seed word bank
+..\scripts\deploy-web.sh
+cd ..\server && npm run seed-words
 ```
 
-The ECS service in step 3 may start before the image is ready on a first apply; re-run `./scripts/deploy-server.sh` if so.
+### Load Test & Failover Demo
 
-**Tear down when you are not demoing** (Multi-AZ Redis and the NAT gateway cost money every hour): `terraform destroy`.
-Cost levers: `nat_gateway_count = 1` (default), `cache.t4g.micro`, DynamoDB on-demand, 0.5 vCPU tasks.
+```powershell
+# 320 simulated players (40 rooms x 8 bots)
+node loadtest/bots.js https://<your-cloudfront-domain> 40 8
 
-## Demo script
+# Simulate AZ + Redis failover
+./scripts/simulate-az-failure.sh
+```
 
-1. Open the CloudFront URL on two phones, create a room, play a round. Footer shows each phone's task and AZ.
-2. Show the CloudWatch dashboard `clouddraw` and the two ECS tasks in different AZs.
-3. Scale-out: set `conn_target = 20` in `infra/variables.tf`, run `terraform apply`, then load the site with bots:
-   `node bots.js --url wss://<your-cloudfront-domain> --rooms 20 --per-room 8`.
-   Watch ConnectionsPerTask rise on the dashboard and ECS add tasks (allow 3-5 minutes: the metric period is 1 min
-   and the scale-out cooldown is 60 s).
-4. Failover: `./scripts/simulate-az-failure.sh ap-southeast-1a` (add `FAIL_REDIS=1` to also promote the Redis replica).
-   Players see "Reconnecting…" and continue. Note ECS will relaunch the tasks (the AZ is not truly down); for a
-   harsher drill, remove that AZ's subnet from the service in the console.
-5. Show the Hall of Fame (drawings in S3) and the leaderboard (DynamoDB).
+### Teardown (Stop All Charges)
 
-## Mapping to your project sheet
+```powershell
+cd infra
+terraform destroy
+```
 
-| Phase | Where it lives |
-|---|---|
-| 1 Network | `infra/network.tf` (VPC, public/app/data subnets in 2 AZs, SG chain, NAT, endpoints) |
-| 2 Frontend + CDN | `web/`, `infra/cdn.tf`, `scripts/deploy-web.sh` |
-| 3 Backend + ALB | `server/`, `infra/app.tf` (ALB, ECS Fargate) |
-| 4 Redis sync | `server/src/bus.js`, `redis.js`, `game.js`, `infra/data.tf` (Multi-AZ ElastiCache) |
-| 5 DB + storage | `server/src/store.js`, `api.js` (presigned S3 uploads), DynamoDB tables |
-| 6 Scale + failover | `infra/app.tf` (auto-scaling), `loadtest/`, `scripts/simulate-az-failure.sh` |
+---
 
-## Known limitations (good "future work" for the report)
+## 📚 Documentation
 
-- **Identity is a client-generated id**: fine for a party game, but anyone who learns a playerId could impersonate it.
-  Next step: server-issued signed session tokens.
-- **Pub/Sub is at-most-once.** After a Redis failover a few messages may be lost; clients get a fresh state snapshot
-  on reconnect (and servers resync after resubscribing), so it self-heals.
-- **No `canvas undo`, spectators or custom word packs.** Easy additions: store stroke groups and add an `undo` message.
-- **CloudFront -> ALB is plain HTTP.** Add a custom domain + ACM certificate to encrypt that hop.
-- **Leaderboard uses a DynamoDB Scan** (fine for hundreds of players; add a GSI to scale) and is keyed by display name.
-- **Scaling beyond one Redis node:** switch to Redis Cluster + sharded Pub/Sub (keys already use `{ROOM}` hash tags).
-- No WAF or per-IP rate limit on room creation; there is a per-socket message limit.
+- [Project Plan](docs/PROJECT_PLAN.md)
+- [Architecture & VPC Diagrams](docs/diagrams/architecture.md)
+- [Final Report](docs/REPORT.md)
+- [Teacher Q&A (40 Questions + 10 Scenarios)](docs/TEACHER_QA.md)
+- [Glossary](docs/GLOSSARY.md)
+- [Evidence Log](docs/EVIDENCE.md)
+- [Phase Recaps (0–8)](docs/recap/)
