@@ -27,3 +27,7 @@ This file records verified test outputs, screenshots, and metrics collected acro
 ## Phase 5: AWS Network & Security (Terraform)
 - Reviewed [network.tf](file:///d:/year5/cloud/project/teayrub/infra/network.tf) (VPC `10.0.0.0/16`, 6 subnets across 2 AZs, IGW, NAT Gateway, S3/DynamoDB Gateway Endpoints, SG chain).
 - *Note*: `terraform` CLI is not installed in this local environment, so `terraform fmt`/`validate`/`plan` were not executed here.
+
+## Phase 6: Cloud Hosting
+- Reviewed [app.tf](file:///d:/year5/cloud/project/teayrub/infra/app.tf), [data.tf](file:///d:/year5/cloud/project/teayrub/infra/data.tf), [cdn.tf](file:///d:/year5/cloud/project/teayrub/infra/cdn.tf), [deploy-server.sh](file:///d:/year5/cloud/project/teayrub/scripts/deploy-server.sh), and [deploy-web.sh](file:///d:/year5/cloud/project/teayrub/scripts/deploy-web.sh).
+- *Note*: Live AWS deployment and 2-phone CloudFront test pending `terraform` + AWS CLI credentials.

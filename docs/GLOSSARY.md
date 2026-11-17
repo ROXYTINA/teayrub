@@ -25,3 +25,7 @@
 | **Gateway Endpoint** | A free VPC endpoint that routes S3 or DynamoDB traffic privately over the AWS network, bypassing the NAT Gateway. |
 | **Security Group vs NACL** | Security Groups are stateful resource-level firewalls; NACLs are stateless subnet-level firewalls. |
 | **Least Privilege** | Granting a user, role, or network resource only the minimum permissions/ports required to do its job. |
+| **ECS Fargate** | A serverless compute engine for containers that runs Docker tasks without managing EC2 servers. |
+| **CloudFront** | AWS's global Content Delivery Network (CDN) that terminates HTTPS and routes static and dynamic paths. |
+| **ElastiCache Multi-AZ** | A managed Redis deployment with a primary node in AZ-1 and a synchronous/async replica in AZ-2 for automatic failover. |
+| **IAM Task Role** | An IAM role assumed by an ECS container giving the application code temporary, scoped AWS API permissions. |

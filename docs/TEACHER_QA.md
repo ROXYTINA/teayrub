@@ -101,3 +101,20 @@
 
 30. **How does the Security Group chain enforce least privilege?**
     - `sg-alb` allows `80/443` from `0.0.0.0/0`; `sg-app` allows `3000` **only** from `sg-alb`; `sg-redis` allows `6379` **only** from `sg-app`.
+
+## Phase 6: Cloud Hosting
+
+31. **Why use AWS ECS Fargate instead of EC2 instances?**
+    - Fargate is serverless compute for containers: we don't patch OSes, manage AMIs, or right-size EC2 instances. We pay only for the vCPU/memory each task uses.
+
+32. **Why set the ALB idle timeout to 120 seconds and deregistration delay to 30 seconds?**
+    - WebSockets can sit idle between strokes; a 120 s timeout prevents premature disconnects. A 30 s deregistration delay lets draining tasks finish cleanly during deploys without stalling scale-in.
+
+33. **Why does CloudFront disable caching for `/api/*` and `/ws` while caching `/`?**
+    - Static HTML/CSS/JS rarely changes and benefits from edge caching, whereas `/api/*` and `/ws` are dynamic real-time endpoints that must always reach the ALB.
+
+34. **Why must `terraform apply -target=aws_ecr_repository.app` run before the full `terraform apply`?**
+    - ECS Fargate tasks need a Docker image in ECR to start. Creating ECR first lets us push the initial image so the ECS service reaches steady state on the first full apply.
+
+35. **How does the IAM Task Role enforce least privilege?**
+    - The task role grants access *only* to the specific DynamoDB tables, the `artwork` S3 bucket (`PutObject`/`GetObject`), and CloudWatch `PutMetricData`—nothing else in the AWS account.

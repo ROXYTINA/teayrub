@@ -53,3 +53,10 @@ The network layer is defined in `infra/network.tf` using a 3-tier, 2-AZ VPC (`10
 - **Private-App Subnets** (`10.0.11.0/24`, `10.0.12.0/24`): Host ECS Fargate tasks with outbound-only internet via NAT and private S3/DynamoDB access via Gateway Endpoints.
 - **Private-Data Subnets** (`10.0.21.0/24`, `10.0.22.0/24`): Host ElastiCache Redis with zero internet route.
 - **Security Group Chain**: `Internet -> sg-alb (80/443) -> sg-app (3000) -> sg-redis (6379)`.
+
+## 7. Cloud Hosting (Phase 6)
+
+The full AWS stack is provisioned via Terraform (`infra/app.tf`, `infra/data.tf`, `infra/cdn.tf`):
+- **Compute**: ECS Fargate tasks (`linux/amd64`) behind an ALB with `/healthz` health checks, 120 s idle timeout, and 30 s deregistration delay.
+- **Data**: ElastiCache Redis Multi-AZ with automatic failover, 4 on-demand DynamoDB tables, and 2 S3 buckets (`site` and `artwork` with CORS + lifecycle rules).
+- **Edge**: CloudFront unifies `/`, `/artwork/*`, `/api/*`, and `/ws` under one HTTPS domain.
