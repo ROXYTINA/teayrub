@@ -10,3 +10,7 @@ This file records verified test outputs, screenshots, and metrics collected acro
 ## Phase 1: Frontend Design & Local Canvas
 - `node --check web/app.js` passed (exit code 0).
 - `web/style.css` verified to include `@media (prefers-reduced-motion: reduce)` and `:focus-visible` keyboard focus styles.
+
+## Phase 2: Real-Time Game Server
+- `node --check server/src/index.js server/src/ws.js server/src/game.js server/src/api.js` passed (exit code 0).
+- *Note*: Live `smoke.js` run is pending `npm install` and a running Redis instance in the local environment.

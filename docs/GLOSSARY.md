@@ -11,3 +11,6 @@
 | **Normalized Coordinates** | Representing canvas positions as fractions in `[0, 1]` rather than pixels so drawings scale identically across screen sizes. |
 | **Stroke Batching** | Grouping multiple pointer points into a single message every ~40 ms to reduce WebSocket and Pub/Sub overhead. |
 | **Pointer Events** | A unified browser event model (`pointerdown`, `pointermove`, `pointerup`) supporting mouse, touch, and pen input. |
+| **WebSocket** | A full-duplex, persistent communication protocol over a single TCP connection, ideal for real-time games. |
+| **Server-Authoritative** | An architecture where the server owns the source of truth for game rules, timers, and scoring to prevent client cheating. |
+| **Rate Limiting** | Restricting how many requests or messages a client can send in a time window to protect against abuse and floods. |

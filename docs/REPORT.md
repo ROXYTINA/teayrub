@@ -22,3 +22,11 @@ Key engineering choices:
 - **Normalized `0..1` coordinates** ensure strokes render identically on mobile phones and desktop monitors.
 - **Immediate local rendering + ~40 ms stroke batching** provides zero-latency feedback for the drawer while reducing WebSocket message frequency.
 - **Accessibility & Mobile**: Unified Pointer Events with `touch-action: none`, `:focus-visible` outlines, and `prefers-reduced-motion` support.
+
+## 3. Real-Time Game Server (Phase 2)
+
+The backend is a single Node.js 20 service (`Express` + `ws` + `ioredis`) serving both REST endpoints (`/api/rooms`, `/api/leaderboard`, `/api/gallery`) and WebSocket connections (`/ws`).
+
+- **State Machine**: `LOBBY -> DRAWING -> ROUND_END -> MATCH_END -> LOBBY`.
+- **Security & Fair Play**: The server selects the secret word, sends it exclusively to the drawer, reveals progressive hints to guessers, scores based on remaining time, and blocks word leaks in chat.
+- **Health Checks**: `/healthz` returns `200 OK` independently of Redis, while `/readyz` checks Redis connectivity.

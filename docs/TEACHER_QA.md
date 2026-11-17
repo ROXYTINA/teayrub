@@ -33,3 +33,20 @@
 
 10. **Why use plain HTML/CSS/JS with no build step (no React/Vite)?**
     - Eliminates build pipelines, simplifies S3 static hosting, and keeps the codebase small and transparent for oral exam explanations.
+
+## Phase 2: Real-Time Game Server
+
+11. **Why use WebSockets (`/ws`) instead of HTTP polling or Server-Sent Events (SSE)?**
+    - HTTP polling adds latency and header overhead on every poll. SSE is one-way (server-to-client). WebSockets provide full-duplex, low-latency communication over a single persistent TCP connection.
+
+12. **How do you prevent a player from cheating by inspecting network traffic?**
+    - The server never sends the secret word to guessers—only to the drawer's socket. Guessers only receive the masked hint (`_ _ _`).
+
+13. **What happens if the drawer accidentally types the secret word in chat?**
+    - The server checks every chat message against the active word and blocks/masks it before broadcasting so the word never leaks.
+
+14. **Why validate stroke shapes and rate-limit WebSocket messages?**
+    - Without validation and rate limits, a malicious client could send huge JSON payloads or thousands of strokes per second, crashing the server or saturating Redis Pub/Sub.
+
+15. **What is the purpose of `SIGTERM` graceful shutdown in `index.js`?**
+    - When ECS replaces or scales in a task, it sends `SIGTERM`. Closing WebSockets with code `1012` (Service Restart) tells clients to reconnect immediately to another healthy task.
