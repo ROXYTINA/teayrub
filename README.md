@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="web/logo.jpg" alt="TeayRub" width="280">
+</p>
+
 # TeayRub
 
 **Draw it. Guess it. Scale it.**
