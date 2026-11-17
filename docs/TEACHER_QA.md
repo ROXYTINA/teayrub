@@ -16,3 +16,20 @@
 
 5. **How do you keep AWS costs low during a student project?**
    - Everything is defined in Terraform so we can `terraform destroy` between work/demo sessions. We use Fargate Spot/on-demand only during testing, 1 NAT Gateway (variable-controlled) instead of 2 during dev, on-demand DynamoDB (pay-per-request, \$0 when idle), and S3 lifecycle rules.
+
+## Phase 1: Frontend & Canvas
+
+6. **Why normalize canvas coordinates to `0..1` instead of sending pixel `(x, y)`?**
+   - Different devices have different screen and canvas sizes. Normalized `0..1` coordinates let every client scale strokes cleanly to its own canvas dimensions.
+
+7. **Why batch stroke points every ~40 ms instead of sending every `pointermove` event?**
+   - `pointermove` fires at 60–120 Hz. Batching every ~40 ms reduces WebSocket and Redis Pub/Sub message volume by 3–4x while keeping visual motion smooth.
+
+8. **Why draw locally immediately before the server echoes the stroke?**
+   - Waiting for a network round-trip before rendering would make the brush feel laggy. Drawing locally first gives instant feedback, while other players receive the batched stroke ~40 ms later.
+
+9. **Why use Pointer Events instead of separate Mouse and Touch events?**
+   - Pointer Events (`pointerdown`, `pointermove`, `pointerup`) handle mouse, touch, and stylus through one code path, paired with `touch-action: none` so mobile browsers don't scroll while drawing.
+
+10. **Why use plain HTML/CSS/JS with no build step (no React/Vite)?**
+    - Eliminates build pipelines, simplifies S3 static hosting, and keeps the codebase small and transparent for oral exam explanations.

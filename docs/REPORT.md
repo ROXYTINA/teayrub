@@ -13,3 +13,12 @@
 - **Real-Time State & Messaging**: **Amazon ElastiCache for Redis** (Multi-AZ with automatic failover) stores room state, scores, and stroke history, and powers cross-server Pub/Sub and distributed timer locks.
 - **Persistence**: **Amazon DynamoDB** (on-demand) stores the word bank, leaderboard, match history, and artwork metadata. Browser-to-S3 presigned `PUT` URLs offload binary PNG uploads from the compute tier.
 - **Infrastructure as Code**: **Terraform** provisions the entire VPC, security groups, compute, and managed data services so environments can be created and destroyed cleanly.
+
+## 2. Frontend Design & Local Canvas (Phase 1)
+
+The frontend is built with plain HTML5, CSS3, and ES modules (`web/index.html`, `web/style.css`, `web/app.js`) with no build step. It uses a notebook-and-marker aesthetic (graph-paper background, `Chewy` display headings, `Nunito` body text, and hard ink shadows).
+
+Key engineering choices:
+- **Normalized `0..1` coordinates** ensure strokes render identically on mobile phones and desktop monitors.
+- **Immediate local rendering + ~40 ms stroke batching** provides zero-latency feedback for the drawer while reducing WebSocket message frequency.
+- **Accessibility & Mobile**: Unified Pointer Events with `touch-action: none`, `:focus-visible` outlines, and `prefers-reduced-motion` support.
