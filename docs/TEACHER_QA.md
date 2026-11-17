@@ -135,3 +135,37 @@
 
 40. **Why measure p95 and p99 stroke latency instead of just average latency?**
     - Averages hide tail spikes. p95 and p99 show what the slowest 5% and 1% of players experience, which directly reflects real-time responsiveness under load.
+
+---
+
+## 10 "What If..." Scenarios
+
+1. **What if an ECS task crashes (`kill -9`) mid-round?**
+   - Clients on that task see `"Reconnecting…"`, reconnect via exponential backoff + jitter to another task, and receive a full state + stroke replay from Redis. If the crashed task held the timer lock, the lock expires and a surviving task takes over.
+
+2. **What if ElastiCache Redis primary fails over?**
+   - ElastiCache Multi-AZ promotes the AZ-2 replica automatically (~15–30 s). `/healthz` stays `200 OK` because it does not depend on Redis, so the ALB does not kill ECS tasks.
+
+3. **What if an entire Availability Zone (AZ-1) goes down?**
+   - The ALB stops routing to AZ-1 and sends all traffic to ECS tasks in AZ-2. ElastiCache fails over to AZ-2.
+
+4. **What if traffic spikes 10x (e.g., 3,000 players)?**
+   - `ConnectionsPerTask` triggers fast ECS scale-out (up to `max_capacity`). DynamoDB on-demand and S3 scale automatically. Beyond `max_capacity`, we would raise the task cap and shard Redis.
+
+5. **What if a player tries to cheat by reading network traffic or spamming strokes?**
+   - The secret word is never sent to guessers' sockets. Chat is filtered for the word, and WebSocket messages are schema-validated and rate-limited.
+
+6. **What if a player's mobile network drops for 5 seconds?**
+   - Exponential backoff + jitter reconnects the WebSocket, and the server sends a full `state` snapshot + canvas stroke replay.
+
+7. **What if `/healthz` depended on Redis?**
+   - A brief Redis failover would cause `/healthz` to return `503` on *every* ECS task, making the ALB terminate the entire fleet at once.
+
+8. **What if a user tries to upload a 50 MB file using a presigned S3 URL?**
+   - Presigned `PUT` URLs are issued only after a valid round end, scoped to `image/png`, and S3 bucket policies/lifecycle rules bound storage.
+
+9. **What if someone forgets to run `terraform destroy` after the demo?**
+   - NAT Gateway, ALB, ECS Fargate, and ElastiCache continue billing hourly (~$\$0.15–\$0.25$/hr).
+
+10. **What if two servers try to end the same round at the exact same millisecond?**
+    - The compare-and-set Redis Lua script ensures only the first server transitions `DRAWING -> ROUND_END`; the second gets a no-op.

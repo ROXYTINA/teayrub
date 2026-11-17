@@ -66,3 +66,44 @@ The full AWS stack is provisioned via Terraform (`infra/app.tf`, `infra/data.tf`
 - **Auto-Scaling**: ECS Application Auto Scaling uses target-tracking policies on custom CloudWatch metric `ConnectionsPerTask` and CPU (min 2 tasks across 2 AZs, max 10) with fast scale-out and slow scale-in.
 - **Load Testing**: `loadtest/bots.js` simulates 40 rooms × 8 bots (~320 players) to measure p50/p95/p99 stroke latency and error rates.
 - **Failover Drill**: `scripts/simulate-az-failure.sh` stops all tasks in one AZ and promotes the ElastiCache Redis replica to verify automatic recovery.
+
+## 9. Security, Hardening & Cost Estimate (Phase 8)
+
+### Security Review
+- **Secrets**: Zero hard-coded secrets or account IDs; `.env` and `*.tfstate*` are gitignored.
+- **Network**: Redis is in `Private-Data` subnets with no internet route; `sg-redis` accepts `6379` only from `sg-app`; `sg-app` accepts `3000` only from `sg-alb`.
+- **IAM**: ECS Task Role is scoped to the 4 DynamoDB tables, `artwork` S3 bucket, and CloudWatch `PutMetricData`.
+- **Remaining Risks**: No AWS WAF or Cognito user login (Tier 3); single NAT Gateway in dev (`nat_gateway_count = 1`).
+
+### Cost Estimate (`ap-southeast-1`) & Teardown
+| Resource | Est. Hourly | Est. Demo Day (8 hrs) |
+| :--- | :--- | :--- |
+| NAT Gateway (1x) | ~\$0.045/hr | ~\$0.36 |
+| ALB | ~\$0.025/hr | ~\$0.20 |
+| ECS Fargate (2 tasks, 0.25 vCPU / 0.5 GB) | ~\$0.025/hr | ~\$0.20 |
+| ElastiCache Redis (`cache.t4g.micro` Multi-AZ) | ~\$0.036/hr | ~\$0.29 |
+| DynamoDB (On-Demand) + S3 + CloudFront | < \$0.01/hr | < \$0.08 |
+| **Total** | **~\$0.14/hr** | **~\$1.13/day** |
+
+**Teardown**: Run `cd infra && terraform destroy` (after confirming) to return ongoing cost to **\$0**.
+
+## 10. Presentation Outline (10 Slides) & 5-Minute Demo Script
+
+### 10-Slide Outline
+1. **Title & Problem**: CloudDraw — low-latency multiplayer draw-and-guess.
+2. **Requirements**: Real-time, 2-AZ HA, 300-bot auto-scaling, managed storage.
+3. **Architecture**: CloudFront -> S3 / ALB -> ECS Fargate -> ElastiCache + DynamoDB.
+4. **VPC & Security (Activity 4)**: 2-AZ 3-tier subnets, Gateway Endpoints, SG chain.
+5. **Frontend**: Notebook-and-marker UI, normalized `0..1` canvas, ~40 ms batching.
+6. **Stateless Backend**: Redis state, Pub/Sub, distributed timer lock, Lua scripts.
+7. **Persistence**: `store.js` dual backend, DynamoDB, direct-to-S3 presigned URLs.
+8. **Auto-Scaling**: `ConnectionsPerTask` custom metric, fast scale-out / slow scale-in.
+9. **Load Test & Failover**: 320-bot latency results & AZ/Redis failover demo.
+10. **Cost & Conclusion**: ~\$1.13/demo day, `terraform destroy`, Q&A.
+
+### 5-Minute Demo Script
+1. **0:00–1:00**: Open CloudFront URL on two phones/browsers; show footer displaying two different ECS tasks/AZs.
+2. **1:00–2:30**: Create room, draw on Phone 1, guess on Phone 2; show Hall of Fame artwork saved via presigned S3 URL.
+3. **2:30–3:45**: Run `loadtest/bots.js` (40 rooms × 8 bots) and show CloudWatch `ConnectionsPerTask` + ECS scale-out.
+4. **3:45–4:45**: Run `scripts/simulate-az-failure.sh`; show `"Reconnecting…"` -> automatic recovery.
+5. **4:45–5:00**: Show `terraform destroy` cost control & wrap up.
