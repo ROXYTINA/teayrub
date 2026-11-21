@@ -4,21 +4,30 @@ const WS_URL = `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.ho
 const COLORS = ['#23224d', '#7d7d96', '#ff4f8b', '#ff8a3d', '#ffd43b', '#2fd6a0', '#27b5e8', '#3f6fe0', '#6b5bff', '#a8672f'];
 const SIZES = [4, 10, 22]; // in canvas units (canvas is 800 x 600)
 const AVATAR_BG = ['#ffd43b', '#2fd6a0', '#ff9dbd', '#9ad7ff', '#c9bcff', '#ffb98a'];
-const AVATAR_ACC = ['shades', 'crown', 'cap', 'cat', 'normal'];
-const AVATAR_MOUTH = ['smile', 'teeth', 'o', 'tongue', 'stache'];
-function avatarSvg(bg, acc = 'shades', mouth = 'smile') {
-  const hat = acc === 'crown' ? '<polygon points="15,15 17,6 21,11 24,5 27,11 31,6 33,15" fill="#ffd43b" stroke="#23224d" stroke-width="2.5" stroke-linejoin="round"/>'
-    : acc === 'cap' ? '<path d="M13 17 Q24 7 35 17 Z" fill="#ff4f8b" stroke="#23224d" stroke-width="2.5"/><line x1="28" y1="17" x2="40" y2="17" stroke="#23224d" stroke-width="3" stroke-linecap="round"/>'
-    : acc === 'cat' ? '<polygon points="12,18 15,6 21,14" fill="'+bg+'" stroke="#23224d" stroke-width="2.5"/><polygon points="36,18 33,6 27,14" fill="'+bg+'" stroke="#23224d" stroke-width="2.5"/>' : '';
-  const eyes = acc === 'shades'
-    ? '<rect x="14" y="19" width="8" height="5" rx="1.5" fill="#23224d"/><rect x="26" y="19" width="8" height="5" rx="1.5" fill="#23224d"/><line x1="22" y1="21" x2="26" y2="21" stroke="#23224d" stroke-width="2.5"/>'
-    : '<circle cx="19" cy="21" r="2.3" fill="#23224d"/><circle cx="29" cy="21" r="2.3" fill="#23224d"/>';
-  const m = mouth === 'teeth' ? '<rect x="18" y="27" width="12" height="5" rx="2" fill="#fff" stroke="#23224d" stroke-width="2.2"/><line x1="24" y1="27" x2="24" y2="32" stroke="#23224d" stroke-width="2"/>'
-    : mouth === 'o' ? '<circle cx="24" cy="29" r="3.2" fill="#23224d"/>'
-    : mouth === 'tongue' ? '<path d="M18 27 Q24 32 30 27" fill="none" stroke="#23224d" stroke-width="2.5" stroke-linecap="round"/><path d="M21 29 Q24 36 27 29 Z" fill="#ff4f8b" stroke="#23224d" stroke-width="2"/>'
-    : mouth === 'stache' ? '<path d="M16 28 Q20 25 24 28 Q28 25 32 28" fill="none" stroke="#23224d" stroke-width="3" stroke-linecap="round"/>'
-    : '<path d="M18 27 Q24 33 30 27" fill="none" stroke="#23224d" stroke-width="2.5" stroke-linecap="round"/>';
-  return `<svg viewBox="0 0 48 48" width="100%" height="100%" aria-hidden="true">${hat}<path d="M9 47 C9 35 16 33 24 33 C32 33 39 35 39 47 Z" fill="${bg}" stroke="#23224d" stroke-width="3" stroke-linejoin="round"/><circle cx="24" cy="23" r="12" fill="${bg}" stroke="#23224d" stroke-width="3"/>${eyes}${m}</svg>`;
+const AVATAR_ACC = ['leaf', 'beret', 'headband', 'glasses', 'pencil'];
+const AVATAR_MOUTH = ['smile', 'grin', 'o', 'tongue', 'flat'];
+// TeayRub character: a leaf-shaped body with a face. Accessories are our own shapes.
+const INK = '#23224d';
+function avatarSvg(bg, acc = 'leaf', mouth = 'smile') {
+  const accessory = {
+    leaf: `<path d="M24 9 C25 3 31 1 35 3 C34 8 29 10 24 9 Z" fill="#2fd6a0" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>`,
+    beret: `<ellipse cx="25" cy="10" rx="11" ry="4.5" fill="#6b5bff" stroke="${INK}" stroke-width="2.5"/><circle cx="25" cy="5.5" r="1.6" fill="${INK}"/>`,
+    headband: `<path d="M11 15 Q24 9 37 15" fill="none" stroke="#ff4f8b" stroke-width="4" stroke-linecap="round"/>`,
+    glasses: `<circle cx="18" cy="25" r="4.6" fill="#fff" stroke="${INK}" stroke-width="2.5"/><circle cx="30" cy="25" r="4.6" fill="#fff" stroke="${INK}" stroke-width="2.5"/><line x1="22.6" y1="25" x2="25.4" y2="25" stroke="${INK}" stroke-width="2.5"/>`,
+    pencil: `<rect x="35" y="8" width="4.5" height="15" rx="1" fill="#ffd43b" stroke="${INK}" stroke-width="2.2" transform="rotate(22 37 15)"/>`,
+  }[acc] ?? '';
+  const eyes = acc === 'glasses'
+    ? `<circle cx="18" cy="25" r="1.7" fill="${INK}"/><circle cx="30" cy="25" r="1.7" fill="${INK}"/>`
+    : `<circle cx="18" cy="25" r="2.6" fill="${INK}"/><circle cx="30" cy="25" r="2.6" fill="${INK}"/><circle cx="18.9" cy="24.1" r=".9" fill="#fff"/><circle cx="30.9" cy="24.1" r=".9" fill="#fff"/>`;
+  const mouths = {
+    smile: `<path d="M19 33 Q24 38 29 33" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`,
+    grin: `<path d="M18 32 Q24 42 30 32 Z" fill="#fff" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/>`,
+    o: `<circle cx="24" cy="34" r="2.8" fill="${INK}"/>`,
+    tongue: `<path d="M19 33 Q24 38 29 33" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/><path d="M21.5 35 Q24 40 26.5 35 Z" fill="#ff4f8b" stroke="${INK}" stroke-width="1.8"/>`,
+    flat: `<line x1="20" y1="34" x2="28" y2="34" stroke="${INK}" stroke-width="2.5" stroke-linecap="round"/>`,
+  };
+  const cheeks = `<ellipse cx="14" cy="32" rx="2.4" ry="1.6" fill="#ff4f8b" opacity=".55"/><ellipse cx="34" cy="32" rx="2.4" ry="1.6" fill="#ff4f8b" opacity=".55"/>`;
+  return `<svg viewBox="0 0 48 48" width="100%" height="100%" aria-hidden="true"><path d="M24 4 C38 12 40 30 36 40 C33 45 29 46 24 46 C19 46 15 45 12 40 C8 30 10 12 24 4 Z" fill="${bg}" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/>${accessory}${eyes}${cheeks}${mouths[mouth] ?? mouths.smile}</svg>`;
 }
 
 // ------------------------------------------------------------------ identity
@@ -42,7 +51,7 @@ const S = {
   phase: 'LOBBY', turn: 0, totalTurns: 0, round: 1, rounds: 1, drawerId: null,
   hint: '', word: null, endsAt: 0, drawMs: 0, offset: 0, players: [], guessed: false,
   color: COLORS[0], size: SIZES[1], eraser: false,
-  avatar: ls.get('cd_avatar') || `${AVATAR_BG[0]}|shades|smile`,
+  avatar: ls.get('tr_avatar') || `${AVATAR_BG[0]}|leaf|smile`,
 };
 const nowMs = () => Date.now() + S.offset;
 const canDraw = () => S.phase === 'DRAWING' && S.drawerId === playerId;
@@ -78,21 +87,16 @@ function renderAvatarPicker() {
   const prev = $('#avatar-preview');
   prev.style.background = 'transparent';
   prev.style.border = 'none';
-  prev.innerHTML = avatarSvg(curBg || AVATAR_BG[0], curAcc || 'shades', curMouth || 'smile');
+  prev.innerHTML = avatarSvg(curBg || AVATAR_BG[0], curAcc || 'leaf', curMouth || 'smile');
 }
 const step = (arr, cur, d) => arr[(arr.indexOf(cur) + d + arr.length) % arr.length];
-const setAv = (bg, acc, m) => { S.avatar = `${bg}|${acc}|${m}`; ls.set('cd_avatar', S.avatar); renderAvatarPicker(); };
+const setAv = (bg, acc, m) => { S.avatar = `${bg}|${acc}|${m}`; ls.set('tr_avatar', S.avatar); renderAvatarPicker(); };
 $('#av-acc-prev').onclick = () => { const [b, a, m] = S.avatar.split('|'); setAv(b, step(AVATAR_ACC, a, -1), m); };
 $('#av-acc-next').onclick = () => { const [b, a, m] = S.avatar.split('|'); setAv(b, step(AVATAR_ACC, a, 1), m); };
 $('#av-mouth-prev').onclick = () => { const [b, a, m] = S.avatar.split('|'); setAv(b, a, step(AVATAR_MOUTH, m, -1)); };
 $('#av-mouth-next').onclick = () => { const [b, a, m] = S.avatar.split('|'); setAv(b, a, step(AVATAR_MOUTH, m, 1)); };
 $('#av-color-prev').onclick = () => { const [b, a, m] = S.avatar.split('|'); setAv(step(AVATAR_BG, b, -1), a, m); };
 $('#av-color-next').onclick = () => { const [b, a, m] = S.avatar.split('|'); setAv(step(AVATAR_BG, b, 1), a, m); };
-$('#av-rand').onclick = () => setAv(
-  AVATAR_BG[Math.floor(Math.random() * AVATAR_BG.length)],
-  AVATAR_ACC[Math.floor(Math.random() * AVATAR_ACC.length)],
-  AVATAR_MOUTH[Math.floor(Math.random() * AVATAR_MOUTH.length)],
-);
 $('#name').addEventListener('input', renderAvatarPicker);
 renderAvatarPicker();
 if (/^#[A-Za-z0-9]{5}$/.test(location.hash)) $('#code').value = location.hash.slice(1).toUpperCase();
@@ -111,30 +115,48 @@ $('#btn-join').onclick = () => {
 };
 $('#code').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#btn-join').click(); });
 
-async function loadBoards() {
-  try {
-    const [lb, gallery] = await Promise.all([api('/api/leaderboard'), api('/api/gallery')]);
-    $('#lb').replaceChildren(...lb.map((r) => {
-      const li = document.createElement('li');
-      li.textContent = r.name;
-      const s = document.createElement('span');
-      s.textContent = r.totalScore;
-      li.append(s);
-      return li;
-    }));
-    $('#lb-empty').hidden = lb.length > 0;
-    $('#gallery').replaceChildren(...gallery.map((g) => {
-      const fig = document.createElement('figure');
-      const img = document.createElement('img');
-      img.src = g.url; img.loading = 'lazy'; img.alt = `Drawing of ${g.word}`;
-      const cap = document.createElement('figcaption');
-      cap.textContent = `${g.word} · ${g.drawer}`;
-      fig.append(img, cap);
-      return fig;
-    }));
-    $('#gallery-empty').hidden = gallery.length > 0;
-  } catch { /* backend not ready; ignore */ }
+// ------------------------------------------------------------------ play alone
+// Players without a room wait in a queue; the server groups them with other waiting players.
+const SOLO_IDLE = 'Play alone with random players';
+const soloBtn = $('#btn-solo');
+let soloName = null;   // set while searching; also means "searching"
+let soloTimer = null;
+function endSolo() {
+  soloName = null;
+  clearTimeout(soloTimer);
+  soloTimer = null;
+  soloBtn.textContent = SOLO_IDLE;
 }
+async function pollSolo() {
+  if (!soloName) return;
+  try {
+    const res = await api('/api/solo', { playerId });
+    if (!soloName) return; // cancelled while the request was in flight
+    if (res.code) {
+      const name = soloName;
+      endSolo();
+      joinRoom(res.code, name);
+      return;
+    }
+    soloTimer = setTimeout(pollSolo, 2000);
+  } catch (e) {
+    endSolo();
+    toast(e.message);
+  }
+}
+soloBtn.onclick = () => {
+  if (soloName) {
+    endSolo();
+    api('/api/solo/cancel', { playerId }).catch(() => {});
+    return;
+  }
+  const name = readName();
+  if (!name) return;
+  soloName = name;
+  soloBtn.textContent = 'Looking for players… tap to cancel';
+  toast('Looking for other players who want to play alone.');
+  pollSolo();
+};
 
 // ------------------------------------------------------------------ connection
 function joinRoom(code, name) {
@@ -159,7 +181,6 @@ function leave() {
   $('#banner').hidden = true;
   $('#game').hidden = true;
   $('#home').hidden = false;
-  loadBoards();
 }
 $('#btn-leave').onclick = leave;
 
@@ -435,7 +456,7 @@ function renderPlayers() {
     const fill = bg || AVATAR_BG[parseInt(p.id.slice(0, 4), 16) % AVATAR_BG.length];
     av.style.background = 'transparent';
     av.style.border = 'none';
-    av.innerHTML = avatarSvg(fill, acc || 'shades', mouth || 'smile');
+    av.innerHTML = avatarSvg(fill, acc || 'leaf', mouth || 'smile');
     const nm = document.createElement('span');
     nm.className = 'pname';
     nm.textContent = p.id === playerId ? `${p.name} (you)` : p.name;
@@ -464,7 +485,7 @@ function renderOverlay() {
     const copy = el('button', 'Copy invite link', 'btn small');
     copy.onclick = copyInvite;
     ov.append(el('h3', 'Waiting for players'), el('div', S.code, 'big-code'),
-      el('p', 'Share this code or link. You need at least 2 players.', 'muted'),
+      el('p', 'Share this code or link. You need at least 3 players.', 'muted'),
       copy, start, el('p', `${connected} in the room`, 'muted'));
     ov.hidden = false;
   } else if (S.phase === 'ROUND_END') {
@@ -515,6 +536,5 @@ setInterval(() => {
 buildTools();
 syncTools();
 clearCanvas();
-loadBoards();
 const resume = ss.get('cd_room');
 if (resume && ls.get('cd_name')) joinRoom(resume, ls.get('cd_name'));

@@ -6,6 +6,7 @@ import { redis } from './redis.js';
 import { config } from './config.js';
 import * as game from './game.js';
 import * as store from './store.js';
+import { soloPoll, soloCancel } from './solo.js';
 
 const CODE_RE = /^[A-Z2-9]{5}$/;
 const wrap = (fn) => (req, res) => fn(req, res).catch((e) => {
@@ -23,6 +24,21 @@ export function apiRouter() {
     const code = req.params.code.toUpperCase();
     const info = CODE_RE.test(code) && (await game.roomInfo(code));
     res.json(info ? { exists: true, ...info } : { exists: false });
+  }));
+
+  // ---- solo play: join the queue, or poll it; returns { code } once a room is ready.
+  r.post('/solo', wrap(async (req, res) => {
+    const playerId = req.body?.playerId;
+    if (typeof playerId !== 'string' || !playerId || playerId.length > 64) return res.status(400).json({ error: 'bad request' });
+    const code = await soloPoll(playerId);
+    res.json(code ? { code } : { waiting: true });
+  }));
+
+  r.post('/solo/cancel', wrap(async (req, res) => {
+    const playerId = req.body?.playerId;
+    if (typeof playerId !== 'string' || !playerId || playerId.length > 64) return res.status(400).json({ error: 'bad request' });
+    await soloCancel(playerId);
+    res.json({ ok: true });
   }));
 
   r.get('/leaderboard', wrap(async (_req, res) => res.json(await store.getLeaderboard(10))));

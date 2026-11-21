@@ -24,7 +24,7 @@ export const config = {
     roundEndMs: Number(env.ROUND_END_MS) || 7000,
     matchEndMs: Number(env.MATCH_END_MS) || 15000,
     rounds: Number(env.ROUNDS) || 2,
-    minPlayers: 2,
+    minPlayers: 3,
     maxPlayers: 10,
     drawerPoints: 40,
   },
