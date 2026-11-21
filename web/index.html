@@ -4,7 +4,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>TeayRub: draw it, guess it</title>
-  <link rel="icon" type="image/jpeg" href="icon.jpg">
+  <link rel="icon" href="favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#6b5bff">
+  <meta property="og:title" content="TeayRub — Draw and Guess">
+  <meta property="og:description" content="Everyone takes a turn drawing a secret word. Everyone else races to guess it.">
+  <meta property="og:image" content="/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Chewy&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
@@ -17,7 +25,7 @@
   <!-- ===================== HOME ===================== -->
   <main id="home" class="screen">
     <section class="hero">
-      <h1 class="logo">TeayRub</h1>
+      <img class="logo-clean" src="logo-primary.svg" alt="TeayRub" role="img" aria-label="TeayRub">
       <svg class="squiggle" viewBox="0 0 300 14" aria-hidden="true"><path d="M3 8 Q 18 -2 33 8 T 63 8 T 93 8 T 123 8 T 153 8 T 183 8 T 213 8 T 243 8 T 273 8 T 297 8" fill="none" stroke="#ff4f8b" stroke-width="5" stroke-linecap="round"/></svg>
       <p class="tagline">Everyone takes a turn drawing a secret word. Everyone else races to guess it.</p>
 

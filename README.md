@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="web/logo.jpg" alt="TeayRub" width="260">
+  <img src="web/logo.png" alt="TeayRub" width="300">
   <p><strong>Real-time multiplayer draw-and-guess on AWS</strong></p>
   <p>
     <a href="#how-to-play">How to Play</a> •
